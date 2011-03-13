@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 # PODNAME: log
 # ABSTRACT: maintain a single-host system administration log
-our $VERSION = '0.001'; # VERSION
+our $VERSION = '0.002'; # VERSION
 use perl5i::2;
 use Getopt::Long;
 use Pod::Usage;
@@ -74,7 +74,7 @@ log - maintain a single-host system administration log
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 

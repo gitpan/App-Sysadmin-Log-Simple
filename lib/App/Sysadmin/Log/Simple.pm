@@ -1,6 +1,6 @@
 package App::Sysadmin::Log::Simple;
 # ABSTRACT: application class for managing a simple sysadmin log
-our $VERSION = '0.001'; # VERSION
+our $VERSION = '0.002'; # VERSION
 use perl5i::2;
 use File::Path 2.00 qw(make_path);
 
@@ -33,15 +33,21 @@ method new($class: %opts) {
 method run($mode) {
     make_path $self->{logdir} unless -d $self->{logdir};
 
-    given ($mode) {
-        when ('refresh-index') {
-            say 'Refreshing index...';
-            $self->_generate_index() and say 'Done.';
+    try {
+        given ($mode) {
+            when ('refresh-index') {
+                say 'Refreshing index...';
+                $self->_generate_index() and say 'Done.';
+            }
+            when ('view') { $self->_view_log();   }
+            when ('log')  { $self->_add_to_log(); }
+            default       { $self->_add_to_log(); }
         }
-        when ('view') { $self->_view_log();   }
-        when ('log')  { $self->_add_to_log(); }
-        default       { $self->_add_to_log(); }
     }
+    catch {
+        die $_;
+    };
+    return 1;
 }
 
 method _generate_index() {
@@ -88,7 +94,6 @@ method _generate_index() {
             say $indexfh "[$day]($year/$month/$day)"
         }
     }
-    return 1;
 }
 
 method _add_to_log() {
@@ -103,6 +108,7 @@ method _add_to_log() {
     say 'Log entry:';
     my $in = $self->{in};
     my $logentry = <$in>;
+    croak 'A log entry is needed' unless $logentry;
     # Start a new log file if one doesn't exist already
     unless (-e $logfile) {
         open my $logfh, '>>', $logfile;
@@ -184,9 +190,7 @@ method _view_log() {
     };
     local $STDOUT = IO::Pager->new(*STDOUT);
     say $self->{view_preamble} if defined $self->{view_preamble};
-    while (<$logfh>) {
-        print;
-    }
+    print while (<$logfh>);
 }
 
 __END__
@@ -200,7 +204,7 @@ App::Sysadmin::Log::Simple - application class for managing a simple sysadmin lo
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 

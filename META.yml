@@ -5,7 +5,7 @@ author:
 build_requires:
   File::Find: 0
   File::Temp: 0
-  Test::Cmd: 0
+  IO::Scalar: 0
   Test::More: 0
   Test::Output: 0
 configure_requires:
@@ -29,4 +29,4 @@ requires:
 resources:
   bugtracker: http://github.com/doherty/App-Sysadmin-Log-Simple/issues
   repository: git://github.com/doherty/App-Sysadmin-Log-Simple.git
-version: 0.001
+version: 0.002

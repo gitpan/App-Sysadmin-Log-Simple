@@ -1,4 +1,7 @@
 Revision history for Perl module App-Sysadmin-Log
 
+0.002     2011-03-12
+    * Rewrite test - will hopefully resolve smoke testers failure reports
+
 0.001     2011-03-09
     * Initial release
