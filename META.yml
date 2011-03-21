@@ -19,7 +19,7 @@ meta-spec:
 name: App-Sysadmin-Log-Simple
 requires:
   File::Find::Rule: 0
-  File::Path: 2.00
+  File::Path: 2.07
   Getopt::Long: 0
   IO::Pager: 0
   IO::Socket: 0
@@ -29,4 +29,4 @@ requires:
 resources:
   bugtracker: http://github.com/doherty/App-Sysadmin-Log-Simple/issues
   repository: git://github.com/doherty/App-Sysadmin-Log-Simple.git
-version: 0.002
+version: 0.003

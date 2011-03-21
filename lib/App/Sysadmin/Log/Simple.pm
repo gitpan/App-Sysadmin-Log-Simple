@@ -1,8 +1,8 @@
 package App::Sysadmin::Log::Simple;
 # ABSTRACT: application class for managing a simple sysadmin log
-our $VERSION = '0.002'; # VERSION
+our $VERSION = '0.003'; # VERSION
 use perl5i::2;
-use File::Path 2.00 qw(make_path);
+use File::Path 2.07 qw(make_path);
 
 
 method new($class: %opts) {
@@ -204,7 +204,7 @@ App::Sysadmin::Log::Simple - application class for managing a simple sysadmin lo
 
 =head1 VERSION
 
-version 0.002
+version 0.003
 
 =head1 SYNOPSIS
 
