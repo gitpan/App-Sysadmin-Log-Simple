@@ -1,0 +1,60 @@
+{
+   "abstract" : "application class for managing a simple sysadmin log",
+   "author" : [
+      "Mike Doherty <doherty@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 4.200006, CPAN::Meta::Converter version 2.110930",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "App-Sysadmin-Log-Simple",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.30"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "File::Find::Rule" : 0,
+            "File::HomeDir" : 0,
+            "File::Path" : "2.07",
+            "Getopt::Long" : 0,
+            "IO::Pager" : 0,
+            "IO::Socket" : 0,
+            "Module::Pluggable" : 0,
+            "Pod::Usage" : 0,
+            "perl" : "5.006",
+            "perl5i::2" : 0
+         }
+      },
+      "test" : {
+         "requires" : {
+            "File::Find" : 0,
+            "File::Temp" : 0,
+            "IO::Scalar" : 0,
+            "Test::More" : 0,
+            "Test::Output" : 0
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/doherty/App-Sysadmin-Log-Simple/issues"
+      },
+      "homepage" : "http://p3rl.org/App::Sysadmin::Log::Simple",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/doherty/App-Sysadmin-Log-Simple.git",
+         "web" : "https://github.com/doherty/App-Sysadmin-Log-Simple"
+      }
+   },
+   "version" : "0.004"
+}
+

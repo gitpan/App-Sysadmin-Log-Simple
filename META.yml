@@ -9,9 +9,9 @@ build_requires:
   Test::More: 0
   Test::Output: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.31
+  ExtUtils::MakeMaker: 6.30
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 4.200004, CPAN::Meta::Converter version 2.110420'
+generated_by: 'Dist::Zilla version 4.200006, CPAN::Meta::Converter version 2.110930'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,14 +19,17 @@ meta-spec:
 name: App-Sysadmin-Log-Simple
 requires:
   File::Find::Rule: 0
+  File::HomeDir: 0
   File::Path: 2.07
   Getopt::Long: 0
   IO::Pager: 0
   IO::Socket: 0
+  Module::Pluggable: 0
   Pod::Usage: 0
   perl: 5.006
   perl5i::2: 0
 resources:
-  bugtracker: http://github.com/doherty/App-Sysadmin-Log-Simple/issues
+  bugtracker: https://github.com/doherty/App-Sysadmin-Log-Simple/issues
+  homepage: http://p3rl.org/App::Sysadmin::Log::Simple
   repository: git://github.com/doherty/App-Sysadmin-Log-Simple.git
-version: 0.003
+version: 0.004
