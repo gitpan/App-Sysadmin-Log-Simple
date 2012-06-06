@@ -1,23 +1,40 @@
 package App::Sysadmin::Log::Simple::UDP;
-use perl5i::2;
+use strict;
+use warnings;
+use Carp;
+use IO::Socket::INET;
+use autodie qw(:socket);
+
 # ABSTRACT: a UDP-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.004'; # VERSION
+our $VERSION = '0.005'; # VERSION
 
 
-method new($class: %opts) {
+sub new {
+    my $class = shift;
+    my %opts  = @_;
+    my $app   = $opts{app};
+
+    $app->{udp}->{host} ||= 'localhost';
+    $app->{udp}->{port} ||= 9002;
+
     return bless {
-        udp  => $opts{udp},
-        user => $opts{user},
+        do_udp  => $app->{do_udp},
+        udp     => $app->{udp},
+        user    => $app->{user},
     }, $class;
 }
 
 
-method log($logentry) {
-    require IO::Socket;
+sub log {
+    my $self     = shift;
+    my $logentry = shift;
+
+    return unless $self->{do_udp};
+
     my $sock = IO::Socket::INET->new(
         Proto       => 'udp',
-        PeerAddr    => $self->{udp}->{host} || 'localhost',
-        PeerPort    => $self->{udp}->{port} || 9002,
+        PeerAddr    => $self->{udp}->{host},
+        PeerPort    => $self->{udp}->{port},
     );
     carp "Couldn't get a socket: $!" unless $sock;
 
@@ -46,15 +63,18 @@ method log($logentry) {
 
         my $ircline = $irc{bold} . $irc{green} . '(LOG)' . $irc{normal}
             . ' ' . $irc{underline} . $irc{lightblue} . $self->{user} . $irc{normal}
-            . ': ' . $logentry;
-        send($sock, $ircline, 0);
+            . ': ' . $logentry . "\r\n";
+        print $sock $ircline;
     }
     else {
-        send($sock, "(LOG) $self->{user}: $logentry", 0);
+        print $sock "(LOG) $self->{user}: $logentry\r\n";
     }
-    $sock->close;
-    return;
+    $sock->shutdown(2);
+
+    return "Logged to $self->{udp}->{host}:$self->{udp}->{port}";
 }
+
+1;
 
 __END__
 =pod
@@ -67,7 +87,7 @@ App::Sysadmin::Log::Simple::UDP - a UDP-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 DESCRIPTION
 
@@ -113,12 +133,7 @@ The project homepage is L<http://p3rl.org/App::Sysadmin::Log::Simple>.
 
 The latest version of this module is available from the Comprehensive Perl
 Archive Network (CPAN). Visit L<http://www.perl.com/CPAN/> to find a CPAN
-site near you, or see L<http://search.cpan.org/dist/App-Sysadmin-Log-Simple/>.
-
-The development version lives at L<http://github.com/doherty/App-Sysadmin-Log-Simple>
-and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>.
-Instead of sending patches, please fork this project using the standard
-git and github infrastructure.
+site near you, or see L<https://metacpan.org/module/App::Sysadmin::Log::Simple/>.
 
 =head1 SOURCE
 
@@ -127,10 +142,8 @@ and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>
 
 =head1 BUGS AND LIMITATIONS
 
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
+You can make new bug reports, and view existing ones, through the
+web interface at L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
 
 =head1 AUTHOR
 

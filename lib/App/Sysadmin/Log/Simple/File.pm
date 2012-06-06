@@ -1,50 +1,72 @@
 package App::Sysadmin::Log::Simple::File;
-use perl5i::2;
+use strict;
+use warnings;
+use Carp;
+use Try::Tiny;
+use autodie qw(:file :filesys);
+use File::Spec;
 use File::Path 2.07 qw(make_path);
+
 # ABSTRACT: a file-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.004'; # VERSION
+our $VERSION = '0.005'; # VERSION
 
 
-method new($class: %opts) {
+sub new {
+    my $class = shift;
+    my %opts  = @_;
+    my $app   = $opts{app};
+
     return bless {
-        logdir  => $opts{logdir} || '/var/log/sysadmin',
-        index_preamble => $opts{index_preamble},
-        view_preamble  => $opts{view_preamble},
-        date    => $opts{date},
-        user    => $opts{user},
+        logdir          => $app->{logdir} || $opts{logdir} || File::Spec->catdir( File::Spec->rootdir(), qw( var log sysadmin ) ),
+        index_preamble  => $app->{index_preamble},
+        view_preamble   => $app->{view_preamble},
+        date            => $app->{date},
+        user            => $app->{user},
+        do_file         => $app->{do_file},
     }, $class;
 }
 
 
-method view() {
-    require IO::Pager;
+sub view {
+    my $self  = shift;
     my $year  = $self->{date}->year;
     my $month = $self->{date}->month;
     my $day   = $self->{date}->day;
+    require IO::Pager;
 
+    my $logfile = File::Spec->catfile($self->{logdir}, $year, $month, "$day.log");
     my $logfh;
     try {
-        open $logfh, '<', "$self->{logdir}/$year/$month/$day.log";
+        open $logfh, '<', $logfile;
     }
     catch {
-        die "No log for $year/$month/$day\n" unless -e "$self->{logdir}/$year/$month/$day";
+        die "No log for $year/$month/$day\n"
+            unless -e $logfile;
+        die $_;
     };
-    local $STDOUT = IO::Pager->new(*STDOUT);
-    say $self->{view_preamble} if defined $self->{view_preamble};
+    local $STDOUT = IO::Pager->new(*STDOUT)
+        unless $ENV{__PACKAGE__.' under test'};
+    say($self->{view_preamble}) if $self->{view_preamble};
     print while (<$logfh>);
     return;
 }
 
 
-method log($line) {
+sub log {
+    my $self = shift;
+    my $line = shift;
+
+    return unless $self->{do_file};
+
     make_path $self->{logdir} unless -d $self->{logdir};
 
     my $year  = $self->{date}->year;
     my $month = $self->{date}->month;
     my $day   = $self->{date}->day;
 
-    make_path "$self->{logdir}/$year/$month" unless -d "$self->{logdir}/$year/$month";
-    my $logfile = "$self->{logdir}/$year/$month/$day.log";
+    my $dir = File::Spec->catdir($self->{logdir}, $year, $month);
+    make_path $dir unless -d $dir;
+    my $logfile = File::Spec->catfile($self->{logdir}, $year, $month, "$day.log");
 
     # Start a new log file if one doesn't exist already
     unless (-e $logfile) {
@@ -63,16 +85,18 @@ method log($line) {
 
     # This might be run as root, so fix up ownership and
     # permissions so mortals can log to files root started
-    my ($login, $pass, $uid, $gid) = getpwnam($self->{user});
+    my ($uid, $gid) = (getpwnam($self->{user}))[2,3];
     chown $uid, $gid, $logfile;
     chmod 0644, $logfile;
-    return;
+
+    return "Logged to $logfile";
 }
 
-method _generate_index() {
+sub _generate_index {
+    my $self = shift;
     require File::Find::Rule;
 
-    open my $indexfh, '>', "$self->{logdir}/index.log"; # clobbers the file
+    open my $indexfh, '>', File::Spec->catfile($self->{logdir}, 'index.log'); # clobbers the file
     say $indexfh $self->{index_preamble} if defined $self->{index_preamble};
 
     # Find relevant log files
@@ -94,7 +118,7 @@ method _generate_index() {
                 map  { [ $_, $_->[0]*1000 + $_->[1]*10 + $_->[2] ] }
                 @dates;
 
-    # Keep track of 
+    # Keep track of
     my $lastyear  = 0;
     my $lastmonth = 0;
     for my $date (@dates) {
@@ -119,6 +143,8 @@ method _generate_index() {
     return;
 }
 
+1;
+
 __END__
 =pod
 
@@ -130,7 +156,7 @@ App::Sysadmin::Log::Simple::File - a file-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 DESCRIPTION
 
@@ -183,12 +209,7 @@ The project homepage is L<http://p3rl.org/App::Sysadmin::Log::Simple>.
 
 The latest version of this module is available from the Comprehensive Perl
 Archive Network (CPAN). Visit L<http://www.perl.com/CPAN/> to find a CPAN
-site near you, or see L<http://search.cpan.org/dist/App-Sysadmin-Log-Simple/>.
-
-The development version lives at L<http://github.com/doherty/App-Sysadmin-Log-Simple>
-and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>.
-Instead of sending patches, please fork this project using the standard
-git and github infrastructure.
+site near you, or see L<https://metacpan.org/module/App::Sysadmin::Log::Simple/>.
 
 =head1 SOURCE
 
@@ -197,10 +218,8 @@ and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>
 
 =head1 BUGS AND LIMITATIONS
 
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
+You can make new bug reports, and view existing ones, through the
+web interface at L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
 
 =head1 AUTHOR
 

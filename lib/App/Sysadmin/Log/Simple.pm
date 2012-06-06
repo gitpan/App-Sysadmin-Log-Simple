@@ -1,14 +1,22 @@
 package App::Sysadmin::Log::Simple;
-# ABSTRACT: application class for managing a simple sysadmin log
-our $VERSION = '0.004'; # VERSION
-use perl5i::2;
+use strict;
+use warnings;
+use v5.10.1;
+use autodie qw(:file :filesys);
+use DateTime;
+use Carp;
 use Module::Pluggable
     search_path => [__PACKAGE__],
     instantiate => 'new';
 
+# ABSTRACT: application class for managing a simple sysadmin log
+our $VERSION = '0.005'; # VERSION
 
-method new($class: %opts) {
-    my $datetimeobj = localtime;
+
+sub new {
+    my $class = shift;
+    my %opts  = @_;
+    my $today = DateTime->now;
     if ($opts{date}) {
         my ($in_year, $in_month, $in_day) = split(m{/}, $opts{date});
         my $in_date = DateTime->new(
@@ -16,52 +24,71 @@ method new($class: %opts) {
             month => $in_month,
             day   => $in_day,
         ) or croak "Couldn't understand your date - use YYYY/MM/DD\n";
-        croak "Cannot use a date in the future\n" if $in_date > $datetimeobj;
-        $datetimeobj = $in_date;
+        croak "Cannot use a date in the future\n" if $in_date > $today;
+        $today = $in_date;
     }
-    my $self = {
-        logdir  => $opts{logdir},
-        date    => $datetimeobj,
-        user    => $opts{user} || $ENV{SUDO_USER} || $ENV{USER},
-        in      => $opts{read_from} || \*STDIN,
-        udp     => $opts{udp},
-    };
-    bless $self, $class;
+
+    return bless {
+        do_twitter  => $opts{do_twitter} // 0,
+        do_file     => $opts{do_file} // 1,
+        do_udp      => $opts{do_udp} // 1,
+        logdir      => $opts{logdir},
+        date        => $today,
+        user        => $opts{user} || $ENV{SUDO_USER} || $ENV{USER},
+        in          => $opts{read_from} || \*STDIN,
+        udp         => $opts{udp},
+    }, $class;
 }
 
 
-method run($cmd) {
+sub run {
+    my $self = shift;
+    my $cmd  = shift;
+
     $cmd ||= 'log';
     $self->run_command($cmd);
     return;
 }
 
-method run_command($cmd) {
+sub run_command {
+    my $self = shift;
+    my $cmd  = shift;
+
     my $s = $self->can("run_command_$cmd");
     die "Unknown command '$cmd'" unless $s;
-    $self->$s();
-    return;
+    return $self->$s();
 }
 
-method run_command_log() {
+sub run_command_log {
+    my $self = shift;
     say 'Log entry:';
     my $in = $self->{in};
     my $logentry = <$in>; # one line
-    croak 'A log entry is needed' unless $logentry;
     chomp $logentry;
+    croak 'A log entry is needed' unless $logentry;
 
-    PLUGIN: foreach my $plugin ( $self->plugins(%$self) ) {
+    PLUGIN: foreach my $plugin ( $self->plugins(app => $self) ) {
         next PLUGIN unless $plugin->can('log');
-        $plugin->log($logentry);
+        my $r = $plugin->log($logentry);
+        if ($r) {
+            my $name = ref $plugin;
+            my $re = __PACKAGE__ . '::';
+            $name =~ s/^$re//;
+            say sprintf '[%-8s] %s', $name, $r;
+        }
     }
 }
 
-method run_command_view() {
-    PLUGIN: foreach my $plugin ( $self->plugins(%$self) ) { # Does this even make sense?
+sub run_command_view {
+    my $self = shift;
+    PLUGIN: foreach my $plugin ( $self->plugins(app => $self) ) {
         next PLUGIN unless $plugin->can('view');
         $plugin->view();
     }
 }
+
+
+1;
 
 __END__
 =pod
@@ -74,7 +101,7 @@ App::Sysadmin::Log::Simple - application class for managing a simple sysadmin lo
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 SYNOPSIS
 
@@ -178,18 +205,15 @@ Defaults to C<STDIN>.
 
 This runs the application in the specified mode: view or log (default).
 
+=for Pod::Coverage run_command run_command_log run_command_view
+
 =head1 AVAILABILITY
 
 The project homepage is L<http://p3rl.org/App::Sysadmin::Log::Simple>.
 
 The latest version of this module is available from the Comprehensive Perl
 Archive Network (CPAN). Visit L<http://www.perl.com/CPAN/> to find a CPAN
-site near you, or see L<http://search.cpan.org/dist/App-Sysadmin-Log-Simple/>.
-
-The development version lives at L<http://github.com/doherty/App-Sysadmin-Log-Simple>
-and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>.
-Instead of sending patches, please fork this project using the standard
-git and github infrastructure.
+site near you, or see L<https://metacpan.org/module/App::Sysadmin::Log::Simple/>.
 
 =head1 SOURCE
 
@@ -198,10 +222,8 @@ and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>
 
 =head1 BUGS AND LIMITATIONS
 
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
+You can make new bug reports, and view existing ones, through the
+web interface at L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
 
 =head1 AUTHOR
 

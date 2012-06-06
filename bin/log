@@ -1,16 +1,21 @@
 #!/usr/bin/env perl
-# PODNAME: log
-# ABSTRACT: maintain a single-host system administration log
-our $VERSION = '0.004'; # VERSION
-use perl5i::2;
+use strict;
+use warnings;
+use v5.10.1;
 use Getopt::Long;
 use Pod::Usage;
 use File::HomeDir;
-require App::Sysadmin::Log::Simple;
+use App::Sysadmin::Log::Simple;
+
+# PODNAME: log
+# ABSTRACT: maintain a single-host system administration log
+our $VERSION = '0.005'; # VERSION
 
 my %opts = (
-    user    => $ENV{SUDO_USER} || $ENV{USER},
-    udp     => 1,
+    user        => $ENV{SUDO_USER} || $ENV{USER},
+    do_udp      => 1,
+    do_file     => 1,
+    do_twitter  => 0,
 );
 my $HOME = File::HomeDir->users_home($opts{user});
 $opts{logdir} = "$HOME/sysadmin-log";
@@ -38,11 +43,17 @@ GetOptions( \%opts,
     'logdir:s',
     'refresh-index',
     'udp!',
+    'twitter!',
+    'file!',
 ) or exit;
+
+$opts{do_udp}     = delete $opts{udp};
+$opts{do_file}    = delete $opts{file};
+$opts{do_twitter} = delete $opts{twitter};
 
 my %udp_data = ( irc => 1, port => 9002, host => 'localhost' );
 GetOptions( 'udp-data=s' => \%udp_data) or exit;
-$opts{udp} = \%udp_data if $opts{udp};
+$opts{udp} = \%udp_data if $opts{do_udp};
 
 
 pod2usage(
@@ -51,8 +62,8 @@ pod2usage(
 
 
 if ($opts{version}) {
-    say "$0 version " . (defined __PACKAGE__->VERSION ? __PACKAGE__->VERSION : 'dev')
-        and exit;
+    say "$0 version " . (defined __PACKAGE__->VERSION ? __PACKAGE__->VERSION : 'dev');
+    exit 0;
 }
 
 
@@ -75,7 +86,7 @@ log - maintain a single-host system administration log
 
 =head1 VERSION
 
-version 0.004
+version 0.005
 
 =head1 SYNOPSIS
 
@@ -85,6 +96,8 @@ Options:
     B<--date>       Read from/write to a date other than today's
     B<--view>       View a log file instead of add to it
     B<--logdir>     Use a different log directory
+    B<--twitter>    Send your log entry to Twitter
+    B<--no-file>    Skip logging to file
     B<--no-udp>     Skip sending log data over UDP
     B<--udp-data>   Sets UDP data:
                         - whether to apply IRC colour encoding
@@ -115,6 +128,14 @@ View a log instead of adding to it.
 =item B<--logdir>
 
 Sets the log directory to use - defaults to F</var/log/sysadmin>.
+
+=item B<--twitter>, --no-twitter
+
+Whether to send your log entry to Twitter. Default is false.
+
+=item B<--file>, --no-file
+
+Whether to log to a file. Default is true.
 
 =item B<--udp>, --no-udp
 
@@ -185,12 +206,7 @@ The project homepage is L<http://p3rl.org/App::Sysadmin::Log::Simple>.
 
 The latest version of this module is available from the Comprehensive Perl
 Archive Network (CPAN). Visit L<http://www.perl.com/CPAN/> to find a CPAN
-site near you, or see L<http://search.cpan.org/dist/App-Sysadmin-Log-Simple/>.
-
-The development version lives at L<http://github.com/doherty/App-Sysadmin-Log-Simple>
-and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>.
-Instead of sending patches, please fork this project using the standard
-git and github infrastructure.
+site near you, or see L<https://metacpan.org/module/App::Sysadmin::Log::Simple/>.
 
 =head1 SOURCE
 
@@ -199,10 +215,8 @@ and may be cloned from L<git://github.com/doherty/App-Sysadmin-Log-Simple.git>
 
 =head1 BUGS AND LIMITATIONS
 
-No bugs have been reported.
-
-Please report any bugs or feature requests through the web interface at
-L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
+You can make new bug reports, and view existing ones, through the
+web interface at L<https://github.com/doherty/App-Sysadmin-Log-Simple/issues>.
 
 =head1 AUTHOR
 
