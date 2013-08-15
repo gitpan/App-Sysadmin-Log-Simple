@@ -2,15 +2,15 @@ package App::Sysadmin::Log::Simple;
 use strict;
 use warnings;
 use v5.10.1;
+# ABSTRACT: application class for managing a simple sysadmin log
+our $VERSION = '0.006'; # VERSION
+
 use autodie qw(:file :filesys);
 use DateTime;
 use Carp;
 use Module::Pluggable
     search_path => [__PACKAGE__],
     instantiate => 'new';
-
-# ABSTRACT: application class for managing a simple sysadmin log
-our $VERSION = '0.005'; # VERSION
 
 
 sub new {
@@ -31,12 +31,14 @@ sub new {
     return bless {
         do_twitter  => $opts{do_twitter} // 0,
         do_file     => $opts{do_file} // 1,
+        do_http     => $opts{do_http} // 0,
         do_udp      => $opts{do_udp} // 1,
         logdir      => $opts{logdir},
         date        => $today,
         user        => $opts{user} || $ENV{SUDO_USER} || $ENV{USER},
         in          => $opts{read_from} || \*STDIN,
         udp         => $opts{udp},
+        http        => $opts{http},
     }, $class;
 }
 
@@ -91,6 +93,7 @@ sub run_command_view {
 1;
 
 __END__
+
 =pod
 
 =encoding utf-8
@@ -101,7 +104,7 @@ App::Sysadmin::Log::Simple - application class for managing a simple sysadmin lo
 
 =head1 VERSION
 
-version 0.005
+version 0.006
 
 =head1 SYNOPSIS
 
@@ -184,6 +187,17 @@ structure:
         port => 9002,       # What port to send to
     );
 
+=head3 http
+
+A hashref of data regarding HTTP usage. If you don't want to
+send a HTTP message, omit this. Otherwise, it has the following
+structure:
+
+    my %http_data = (
+        uri => 'http://localhost', # What uri to send to
+        method => 'post',          # What method to send using
+    );
+
 =head3 index_preamble
 
 The text to prepend to the index page. Can be anything - by
@@ -237,4 +251,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

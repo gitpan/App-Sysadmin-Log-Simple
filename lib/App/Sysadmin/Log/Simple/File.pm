@@ -1,14 +1,13 @@
 package App::Sysadmin::Log::Simple::File;
 use strict;
 use warnings;
+# ABSTRACT: a file-logger for App::Sysadmin::Log::Simple
+our $VERSION = '0.006'; # VERSION
+
 use Carp;
 use Try::Tiny;
 use autodie qw(:file :filesys);
-use File::Spec;
-use File::Path 2.07 qw(make_path);
-
-# ABSTRACT: a file-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.005'; # VERSION
+use Path::Tiny;
 
 
 sub new {
@@ -17,7 +16,7 @@ sub new {
     my $app   = $opts{app};
 
     return bless {
-        logdir          => $app->{logdir} || $opts{logdir} || File::Spec->catdir( File::Spec->rootdir(), qw( var log sysadmin ) ),
+        logdir          => path( $app->{logdir} || $opts{logdir} || qw(/ var log sysadmin) ),
         index_preamble  => $app->{index_preamble},
         view_preamble   => $app->{view_preamble},
         date            => $app->{date},
@@ -34,20 +33,16 @@ sub view {
     my $day   = $self->{date}->day;
     require IO::Pager;
 
-    my $logfile = File::Spec->catfile($self->{logdir}, $year, $month, "$day.log");
-    my $logfh;
-    try {
-        open $logfh, '<', $logfile;
-    }
-    catch {
-        die "No log for $year/$month/$day\n"
-            unless -e $logfile;
-        die $_;
-    };
+    my $logfile = path($self->{logdir}, $year, $month, "$day.log");
+    die "No log for $year/$month/$day\n" unless $logfile->is_file;
+
+    my $logfh = $logfile->openr_utf8;
     local $STDOUT = IO::Pager->new(*STDOUT)
         unless $ENV{__PACKAGE__.' under test'};
     say($self->{view_preamble}) if $self->{view_preamble};
     print while (<$logfh>);
+    close $logfh;
+
     return;
 }
 
@@ -58,22 +53,22 @@ sub log {
 
     return unless $self->{do_file};
 
-    make_path $self->{logdir} unless -d $self->{logdir};
+    $self->{logdir}->mkpath unless $self->{logdir}->is_dir;
 
     my $year  = $self->{date}->year;
     my $month = $self->{date}->month;
     my $day   = $self->{date}->day;
 
-    my $dir = File::Spec->catdir($self->{logdir}, $year, $month);
-    make_path $dir unless -d $dir;
-    my $logfile = File::Spec->catfile($self->{logdir}, $year, $month, "$day.log");
+    my $dir = path($self->{logdir}, $year, $month);
+    $dir->mkpath unless $dir->is_dir;
+    my $logfile = path($self->{logdir}, $year, $month, "$day.log");
 
     # Start a new log file if one doesn't exist already
-    unless (-e $logfile) {
+    unless ($logfile->is_file) {
         open my $logfh, '>>', $logfile;
         my $line = $self->{date}->day_name . ' ' . $self->{date}->month_name . " $day, $year";
         say $logfh $line;
-        say $logfh "=" x length($line), "\n";
+        say $logfh '=' x length($line), "\n";
         close $logfh; # Explicitly close before calling generate_index() so the file is found
         $self->_generate_index();
     }
@@ -96,17 +91,21 @@ sub _generate_index {
     my $self = shift;
     require File::Find::Rule;
 
-    open my $indexfh, '>', File::Spec->catfile($self->{logdir}, 'index.log'); # clobbers the file
+    my $indexfh = path($self->{logdir}, 'index.log')->openw_utf8; # clobbers the file
     say $indexfh $self->{index_preamble} if defined $self->{index_preamble};
 
     # Find relevant log files
     my @files = File::Find::Rule->mindepth(3)->in($self->{logdir});
     my @dates;
     foreach (@files) {
-        if (m!(\d{4}/\d{1,2}/\d{1,2})!) { # Extract the date
-            my $date = $1;
-            my ($year, $month, $day) = split /\//, $date;
-            push @dates, [$year, $month, $day];
+        if (m{
+            (?<year>\d{4})
+            /
+            (?<month>\d{1,2})
+            /
+            (?<day>\d{1,2})
+        }x) { # Extract the date
+            push @dates, [$+{year}, $+{month}, $+{day}];
         }
         else {
             warn "WTF: $_";
@@ -140,12 +139,14 @@ sub _generate_index {
             say $indexfh "[$day]($year/$month/$day)"
         }
     }
+    close $indexfh;
     return;
 }
 
 1;
 
 __END__
+
 =pod
 
 =encoding utf-8
@@ -156,7 +157,7 @@ App::Sysadmin::Log::Simple::File - a file-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.005
+version 0.006
 
 =head1 DESCRIPTION
 
@@ -233,4 +234,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

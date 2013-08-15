@@ -6,7 +6,7 @@ use IO::Socket::INET;
 use autodie qw(:socket);
 
 # ABSTRACT: a UDP-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.005'; # VERSION
+our $VERSION = '0.006'; # VERSION
 
 
 sub new {
@@ -77,6 +77,7 @@ sub log {
 1;
 
 __END__
+
 =pod
 
 =encoding utf-8
@@ -87,7 +88,7 @@ App::Sysadmin::Log::Simple::UDP - a UDP-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.005
+version 0.006
 
 =head1 DESCRIPTION
 
@@ -157,4 +158,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

@@ -3,9 +3,10 @@ use strict;
 use warnings;
 use autodie qw(:file :filesys);
 use Config::General qw(ParseConfig);
+use Path::Tiny;
 
 # ABSTRACT: a Twitter-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.005'; # VERSION
+our $VERSION = '0.006'; # VERSION
 
 
 sub new {
@@ -19,12 +20,11 @@ sub new {
     }
     else {
         require File::HomeDir;
-        require File::Spec;
 
         my $HOME = File::HomeDir->users_home(
             $app->{user} || $ENV{SUDO_USER} || $ENV{USER}
         );
-        $oauth_file = File::Spec->catfile($HOME, '.sysadmin-log-twitter-oauth');
+        $oauth_file = path($HOME, '.sysadmin-log-twitter-oauth');
     }
 
     return bless {
@@ -40,28 +40,30 @@ sub log {
 
     return unless $self->{do_twitter};
 
-    require Net::Twitter::Lite;
+    require Net::Twitter::Lite::WithAPIv1_1;
 
     warn "You should do: chmod 600 $self->{oauth_file}\n"
-        if ((stat $self->{oauth_file})[2] & 07777) != 0600; ## no critic (ValuesAndExpressions::ProhibitLeadingZeros)
+        if ($self->{oauth_file}->stat->mode & 07777) != 0600; ## no critic (ValuesAndExpressions::ProhibitLeadingZeros)
     my $conf = Config::General->new($self->{oauth_file});
     my %oauth = $conf->getall();
 
     my $ua = __PACKAGE__
         . '/' . (defined __PACKAGE__->VERSION ? __PACKAGE__->VERSION : 'dev');
-    my $t = Net::Twitter::Lite->new(
+    my $t = Net::Twitter::Lite::WithAPIv1_1->new(
         consumer_key        => $oauth{consumer_key},
         consumer_secret     => $oauth{consumer_secret},
+        access_token        => $oauth{oauth_token},
+        access_token_secret => $oauth{oauth_token_secret},
+        ssl                 => 1,
         useragent           => $ua,
-        legacy_lists_api    => 0
     );
     $t->access_token($oauth{oauth_token});
     $t->access_token_secret($oauth{oauth_token_secret});
 
     my $result = $t->update($logentry);
-    die "Something went wrong" unless $result->{text} eq $logentry;
+    die 'Something went wrong' unless $result->{text} eq $logentry;
 
-    my $url = 'https://twitter.com/#!/'
+    my $url = 'https://twitter.com/'
         . $result->{user}->{screen_name}
         . '/status/' . $result->{id_str};
     return "Posted to Twitter: $url";
@@ -70,6 +72,7 @@ sub log {
 1;
 
 __END__
+
 =pod
 
 =encoding utf-8
@@ -80,7 +83,7 @@ App::Sysadmin::Log::Simple::Twitter - a Twitter-logger for App::Sysadmin::Log::S
 
 =head1 VERSION
 
-version 0.005
+version 0.006
 
 =head1 DESCRIPTION
 
@@ -146,4 +149,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

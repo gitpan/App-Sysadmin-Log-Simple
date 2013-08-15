@@ -8,9 +8,12 @@ META.yml
 Makefile.PL
 README
 README.mkdn
-bin/log
+bin/sysadmin-log
+inc/Devel/AssertOS.pm
+inc/Devel/CheckOS.pm
 lib/App/Sysadmin/Log/Simple.pm
 lib/App/Sysadmin/Log/Simple/File.pm
+lib/App/Sysadmin/Log/Simple/HTTP.pm
 lib/App/Sysadmin/Log/Simple/Twitter.pm
 lib/App/Sysadmin/Log/Simple/UDP.pm
 t/00-compile.t
@@ -19,9 +22,7 @@ t/02-view.t
 t/03-log.t
 t/04-index.t
 t/05-twitter.t
-t/log/2011/2/19.log
-t/log/2011/5/7.log
-t/log/index.log
+t/06-http.t
 xt/author/critic.t
 xt/author/test-eol.t
 xt/release/cpan-changes.t
