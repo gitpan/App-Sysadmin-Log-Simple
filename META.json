@@ -4,7 +4,7 @@
       "Mike Doherty <doherty@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.131560",
+   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.132140",
    "license" : [
       "perl_5"
    ],
@@ -86,6 +86,6 @@
          "web" : "https://github.com/doherty/App-Sysadmin-Log-Simple"
       }
    },
-   "version" : "0.006"
+   "version" : "0.007"
 }
 

@@ -10,6 +10,7 @@ README
 README.mkdn
 bin/sysadmin-log
 inc/Devel/AssertOS.pm
+inc/Devel/AssertOS/MSWin32.pm
 inc/Devel/CheckOS.pm
 lib/App/Sysadmin/Log/Simple.pm
 lib/App/Sysadmin/Log/Simple/File.pm

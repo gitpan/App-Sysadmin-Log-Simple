@@ -2,7 +2,7 @@ package App::Sysadmin::Log::Simple::File;
 use strict;
 use warnings;
 # ABSTRACT: a file-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.006'; # VERSION
+our $VERSION = '0.007'; # VERSION
 
 use Carp;
 use Try::Tiny;
@@ -157,7 +157,7 @@ App::Sysadmin::Log::Simple::File - a file-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.006
+version 0.007
 
 =head1 DESCRIPTION
 
