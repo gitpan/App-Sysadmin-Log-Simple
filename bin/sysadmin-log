@@ -9,7 +9,7 @@ use App::Sysadmin::Log::Simple;
 
 # PODNAME: sysadmin-log
 # ABSTRACT: maintain a single-host system administration log
-our $VERSION = '0.007'; # VERSION
+our $VERSION = '0.008'; # VERSION
 
 my %opts = (
     user        => $ENV{SUDO_USER} || $ENV{USER},
@@ -94,7 +94,7 @@ sysadmin-log - maintain a single-host system administration log
 
 =head1 VERSION
 
-version 0.007
+version 0.008
 
 =head1 SYNOPSIS
 

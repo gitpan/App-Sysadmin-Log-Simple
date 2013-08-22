@@ -66,6 +66,7 @@
          "requires" : {
             "Capture::Tiny" : "0",
             "IO::Scalar" : "0",
+            "Path::Tiny" : "0.008",
             "Test::More" : "0.96",
             "Test::Output" : "0",
             "Test::Requires" : "0",
@@ -86,6 +87,6 @@
          "web" : "https://github.com/doherty/App-Sysadmin-Log-Simple"
       }
    },
-   "version" : "0.007"
+   "version" : "0.008"
 }
 

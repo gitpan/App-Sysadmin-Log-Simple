@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10.1;
 # ABSTRACT: application class for managing a simple sysadmin log
-our $VERSION = '0.007'; # VERSION
+our $VERSION = '0.008'; # VERSION
 
 use autodie qw(:file :filesys);
 use DateTime;
@@ -104,7 +104,7 @@ App::Sysadmin::Log::Simple - application class for managing a simple sysadmin lo
 
 =head1 VERSION
 
-version 0.007
+version 0.008
 
 =head1 SYNOPSIS
 

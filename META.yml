@@ -6,6 +6,7 @@ build_requires:
   Capture::Tiny: 0
   IO::Scalar: 0
   Module::Build: 0.3601
+  Path::Tiny: 0.008
   Test::More: 0.96
   Test::Output: 0
   Test::Requires: 0
@@ -48,4 +49,4 @@ resources:
   bugtracker: https://github.com/doherty/App-Sysadmin-Log-Simple/issues
   homepage: http://p3rl.org/App::Sysadmin::Log::Simple
   repository: git://github.com/doherty/App-Sysadmin-Log-Simple.git
-version: 0.007
+version: 0.008
