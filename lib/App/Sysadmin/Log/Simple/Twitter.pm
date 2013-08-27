@@ -6,7 +6,7 @@ use Config::General qw(ParseConfig);
 use Path::Tiny;
 
 # ABSTRACT: a Twitter-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.008'; # VERSION
+our $VERSION = '0.009'; # VERSION
 
 
 sub new {
@@ -83,7 +83,7 @@ App::Sysadmin::Log::Simple::Twitter - a Twitter-logger for App::Sysadmin::Log::S
 
 =head1 VERSION
 
-version 0.008
+version 0.009
 
 =head1 DESCRIPTION
 

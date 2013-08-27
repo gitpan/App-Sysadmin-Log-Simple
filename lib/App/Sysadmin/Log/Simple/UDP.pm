@@ -6,7 +6,7 @@ use IO::Socket::INET;
 use autodie qw(:socket);
 
 # ABSTRACT: a UDP-logger for App::Sysadmin::Log::Simple
-our $VERSION = '0.008'; # VERSION
+our $VERSION = '0.009'; # VERSION
 
 
 sub new {
@@ -88,7 +88,7 @@ App::Sysadmin::Log::Simple::UDP - a UDP-logger for App::Sysadmin::Log::Simple
 
 =head1 VERSION
 
-version 0.008
+version 0.009
 
 =head1 DESCRIPTION
 
